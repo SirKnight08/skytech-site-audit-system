@@ -1,0 +1,35 @@
+{
+  "name": "SkyTech Backend (Cloudflare Workers)",
+  "privateEnv": {
+    "NODE_ENV": "development"
+  },
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    }
+  },
+  "workspaceFolder": "/workspace",
+  "postCreateCommand": "cd backend && npm install",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "cloudflare.workers",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint"
+      ]
+    }
+  },
+  "portsAttributes": {
+    "8787": {
+      "label": "Wrangler Dev",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "ports": [8787],
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
+  ],
+  "shutdownAction": "stopContainer"
+}
+

@@ -1,0 +1,9 @@
+name = "skytech-site-audit"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+workers_dev = true
+
+[vars]
+# Put non-secret defaults here if needed later
+
+
