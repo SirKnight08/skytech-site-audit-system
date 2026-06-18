@@ -1,0 +1,124 @@
+# SkyTech Site Audit System (SAMS) — Documentation Index
+
+> A web-based site auditing tool that checks security headers, SSL configuration, performance metadata, SEO signals, and tech stack detection. Backend runs on Cloudflare Workers; frontend is a Next.js 15 SPA.
+
+---
+
+## Project Overview
+
+- [README](../../README.md): Top-level project description and planned folder structure.
+- [docs/README](README.md): Documentation overview (placeholder).
+- [docs/architecture](architecture.md): System architecture document.
+- [docs/requirements](requirements.md): Project requirements document.
+- [docs/roadmap](roadmap.md): Development roadmap and milestones.
+
+## Backend (Cloudflare Workers)
+
+- [backend/README](../backend/README.md): Backend overview.
+- [backend/src/index.ts](../backend/src/index.ts): Worker entry point — routes `POST /audit` to the audit handler.
+- [backend/src/handlers/audit.ts](../backend/src/handlers/audit.ts): Core audit logic — fetches the target URL and evaluates six security headers (Content-Security-Policy, Strict-Transport-Security, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy).
+- [backend/wrangler.toml](../backend/wrangler.toml): Cloudflare Workers configuration (name, main entry, compatibility date).
+- [backend/package.json](../backend/package.json): Build and dev scripts — `npm run dev`, `npm run build`, `npm run publish`.
+- [backend/tsconfig.json](../backend/tsconfig.json): TypeScript configuration for the Worker.
+
+## Frontend (Next.js 15)
+
+- [frontend/README](../frontend/README.md): Frontend overview.
+- [frontend/app/layout.tsx](../frontend/app/layout.tsx): Root layout — sets metadata, wraps app in Providers (dark theme).
+- [frontend/app/page.tsx](../frontend/app/page.tsx): Home page — renders `ResultsDisplay`.
+- [frontend/app/providers.tsx](../frontend/app/providers.tsx): Theme provider wrapping `next-themes` (`ThemeProvider` with `class` attribute, dark default).
+- [frontend/app/globals.css](../frontend/app/globals.css): Global CSS variables and base styles — dark theme, custom property system (no Tailwind).
+- [frontend/components/ResultsDisplay.tsx](../frontend/components/ResultsDisplay.tsx): Main UI component — URL input, "Run Audit" button, error and result display.
+- [frontend/components/ResultsDisplay.module.css](../frontend/components/ResultsDisplay.module.css): Component-scoped styles for the audit panel.
+- [frontend/lib/audit.ts](../frontend/lib/audit.ts): API client — `runAudit()` posts a URL to the backend endpoint and returns typed results.
+- [frontend/package.json](../frontend/package.json): Dependencies — Next.js 15, React 19, Supabase JS client, next-themes.
+- [frontend/.env.local](../frontend/.env.local): Local environment variables (Supabase URL/keys, backend URL).
+- [frontend/tsconfig.json](../frontend/tsconfig.json): TypeScript configuration with path alias `@/*`.
+
+## Database (Supabase)
+
+- [database/README](../database/README.md): Database documentation overview.
+
+## Reports
+
+- [reports/README](../reports/README.md): Reports directory overview.
+
+## Development Environment
+
+- [.devcontainer/README](../.devcontainer/README.md): DevContainer setup instructions (Node 20, Wrangler).
+- [.devcontainer/devcontainer.json](../.devcontainer/devcontainer.json): VS Code DevContainer configuration — extensions, post-create hook, port forwarding (8787).
+- [.devcontainer/Dockerfile](../.devcontainer/Dockerfile): Docker base image with system prerequisites.
+
+---
+
+## API Reference
+
+### `POST /audit`
+
+Checks a target URL for HTTP security headers.
+
+**Request:**
+```json
+{
+  "url": "https://example.com"
+}
+```
+
+**Response (200):**
+```json
+{
+  "url": "https://example.com",
+  "status": "ok",
+  "security_headers": [
+    {
+      "header": "Content-Security-Policy",
+      "exists": false,
+      "value": null,
+      "status": "fail",
+      "explanation": "Header is missing."
+    }
+  ]
+}
+```
+
+**Error response (400):**
+```json
+{
+  "error": "Request body must include a string \"url\"",
+  "status": "error"
+}
+```
+
+### Audit Response Types (frontend)
+
+```typescript
+type AuditResponse = {
+  security?:       { headers?: Record<string, any>; summary?: string }
+  ssl?:            { ok?: boolean; summary?: string }
+  performance?:    { score?: number; summary?: string }
+  seo?:            { summary?: string }
+  techStack?:      { summary?: string }
+  error?:          string
+}
+```
+
+---
+
+## Conventions
+
+- **Language**: TypeScript throughout (backend + frontend).
+- **Backend runtime**: Cloudflare Workers (Service Worker format).
+- **Frontend framework**: Next.js 15 with App Router, React 19.
+- **CSS**: Plain CSS with custom properties (CSS variables) — no Tailwind, no PostCSS.
+- **Dark theme**: Enabled by default via `next-themes` with class-based toggling.
+- **API transport**: JSON over HTTP.
+- **Packages**: Installed per workspace subdirectory (no monorepo tool).
+
+---
+
+## Related Resources
+
+- [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/)
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Supabase Documentation](https://supabase.com/docs)
+- [next-themes](https://github.com/pacocoursey/next-themes)

@@ -3,15 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import styles from "./ResultsDisplay.module.css";
 import { runAudit } from "@/lib/audit";
+import type { AuditResponse } from "@/lib/audit";
 
-export type AuditResult = {
-  security?: { headers?: Record<string, any>; summary?: string };
-  ssl?: { ok?: boolean; summary?: string };
-  performance?: { score?: number; summary?: string };
-  seo?: { summary?: string };
-  techStack?: { summary?: string };
-  error?: string;
-};
+export type AuditResult = AuditResponse;
+
+
 
 export default function ResultsDisplay() {
   const [url, setUrl] = useState("");

@@ -1,44 +1,67 @@
-export type AuditResponse = {
-  security?: { headers?: Record<string, any>; summary?: string };
-  ssl?: { ok?: boolean; summary?: string };
-  performance?: { score?: number; summary?: string };
-  seo?: { summary?: string };
-  techStack?: { summary?: string };
-  error?: string;
-};
+export type SecurityHeaderSeverity =
+  | 'low'
+  | 'medium'
+  | 'high'
+  | 'info'
+
+export type SecurityHeaderResult = {
+  header: string
+  exists: boolean
+  value: string | null
+  status: 'pass' | 'fail'
+  severity: SecurityHeaderSeverity
+  explanation: string
+  recommendation: string
+}
+
+export type AuditSuccessResponse = {
+  url: string
+  status: 'ok'
+  security_headers: SecurityHeaderResult[]
+}
+
+export type AuditErrorResponse = {
+  status: 'error'
+  error: string
+  message: string
+}
+
+export type AuditResponse = AuditSuccessResponse | AuditErrorResponse
+
 
 export async function runAudit(url: string): Promise<AuditResponse> {
-  const endpoint = process.env.NEXT_PUBLIC_AUDIT_ENDPOINT;
+  const endpoint = process.env.NEXT_PUBLIC_AUDIT_ENDPOINT
   if (!endpoint) {
     return {
-      error:
-        "Missing NEXT_PUBLIC_AUDIT_ENDPOINT environment variable for the audit API."
-    };
+      status: 'error',
+      error: 'client_config_missing',
+      message: 'Missing NEXT_PUBLIC_AUDIT_ENDPOINT environment variable for the audit API.',
+    }
   }
+
 
   const res = await fetch(endpoint, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json"
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ url })
-  });
+    body: JSON.stringify({ url }),
+  })
 
-  let data: any = null;
-  try {
-    data = await res.json();
-  } catch {
-    // ignore
-  }
+  const data: unknown = await res
+    .json()
+    .catch(() => ({ error: 'Invalid JSON response', message: 'Audit API returned non-JSON' }))
 
   if (!res.ok) {
+    const err = data as Partial<AuditErrorResponse>
     return {
-      error:
-        data?.error ||
-        `Audit request failed with status ${res.status}`
-    };
+      status: 'error',
+      error: err.error || `Audit request failed with status ${res.status}`,
+      message: err.message || 'Audit API request failed',
+    }
   }
 
-  return data as AuditResponse;
+  return data as AuditResponse
 }
+
 
